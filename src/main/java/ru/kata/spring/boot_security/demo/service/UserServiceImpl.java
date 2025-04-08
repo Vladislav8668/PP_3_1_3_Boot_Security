@@ -34,7 +34,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(long id) {
-        if (userRepository.findById(id).isPresent()) {
+        //без проверки бросает исключение EmptyResultDataAccessException (бросание в реализации deleteById)
+        if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
         }
     }
@@ -51,16 +52,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(User user) {
-        user.setEnabled(1);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        userRepository.save(setEnabledAndPassword(user));
     }
 
     @Override
     public void updateUser(User user) {
-        user.setEnabled(1);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        // Проверка был ли изменен пароль при редактировании пользователя
+        String newPassword = user.getPassword();
+        if (newPassword != null && !newPassword.isEmpty()) {
+            userRepository.save(setEnabledAndPassword(user));
+        } else {
+            user.setEnabled(1);
+            user.setPassword(userRepository.getById(user.getId()).getPassword());
+            userRepository.save(user);
+        }
     }
 
     @Override
@@ -69,6 +74,12 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
+        return user;
+    }
+
+    private User setEnabledAndPassword(User user) {
+        user.setEnabled(1);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return user;
     }
 

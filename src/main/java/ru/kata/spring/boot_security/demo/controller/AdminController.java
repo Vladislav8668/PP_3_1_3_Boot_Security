@@ -3,9 +3,9 @@ package ru.kata.spring.boot_security.demo.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.dao.RoleRepository;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.util.List;
@@ -15,18 +15,18 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userService;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
 
-    public AdminController(UserService userService, RoleRepository roleRepository) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
+        this.roleService = roleService;
     }
 
     @GetMapping("/addNewUser")
     public String addNewUser(Model model) {
         User user = new User();
         model.addAttribute("user", user);
-        List<Role> roles = roleRepository.findAll();
+        List<Role> roles = roleService.getAllRoles();
         model.addAttribute("roles", roles);
         return "user_info";
     }
@@ -46,12 +46,11 @@ public class AdminController {
         User user = userService.getUser(id);
         if (user != null) {
             model.addAttribute("user", user);
-            List<Role> roles = roleRepository.findAll();
+            List<Role> roles = roleService.getAllRoles();
             model.addAttribute("roles", roles);
             return "user_edit";
-        } else {
-            return "redirect:/admin";
         }
+        return "redirect:/admin";
     }
 
     @PostMapping("/editUser")

@@ -36,4 +36,5 @@ public class MainController {
         model.addAttribute("users", users);
         return "all_users";
     }
+
 }
